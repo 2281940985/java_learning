@@ -1,4 +1,4 @@
-* 
+## java基础学习
 * == 比较的时两个变量的地址,equals比较的是两个变量的内容
 * Java 程序都是从 main 方法开始执行，为了能运行这个程序，必须包含 main 方法并且创建一个实例对象。
 * 局部变量（Local Variables）：局部变量是在方法、构造函数或块内部声明的变量，它们在声明的方法、构造函数或块执行结束后被销毁，局部变量在声明时需要初始化，否则会导致编译错误。
@@ -92,6 +92,7 @@ super.方法名(参数列表);
 
 
 ## leecode hot 100 刷题笔记
+### 1.哈希
 1. 两数之和:https://leetcode.cn/problems/two-sum/description/
     * 答案要求返回数组下标，重点在于根据值去查找下标，可以转换成HashMap存储键值对，利用HashMap的高效的查找、插入和删除操作
    可以降低时间复杂度为O(n * log n)
@@ -182,6 +183,7 @@ class Solution {
     }
 }
 ```
+### 2.双指针
 4. 移动0:https://leetcode.cn/problems/move-zeroes/description/
     * 先定义nonZeroIndex变量，用于记录下一个非零元素应该放置的位置。
     * 遍历数组nums，当遇到非零元素时，就将其与nums[nonZeroIndex]交换，之后nonZeroIndex向前推进。
@@ -297,6 +299,73 @@ class Solution {
       Solution solution = new Solution();
       System.out.println(solution.trap(new int[]{0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1}));
    }
+}
+
+```
+### 3.滑动窗口
+8. 无重复字符的最长字串:https://leetcode.cn/problems/longest-substring-without-repeating-characters/
+    * 先检查字符串是否为空或长度为0。然后，它使用一个HashMap来记录每个字符最后出现的位置。
+    * 维护一个名为left的指针作为滑动窗口的左边界，以及一个maxLength变量来追踪最长子串的长度。
+    * 遍历字符串时，如果当前字符已经存在于HashMap中并且其位置在当前窗口内，就将窗口的左边界移至该字符上次出现位置的下一个位置，以确保窗口内的字符不重复。
+    * 更新当前字符在HashMap中的位置，并检查更新后的窗口大小是否比已知的最大长度还要大，如果是，则更新最大长度。
+    * charMap.get(currentChar) >= left必须要加上，否则左边界会拓宽。
+```java
+class Solution {
+    public int lengthOfLongestSubstring(String s) {
+        if(s == null || s.length() == 0) return 0;
+        Map<Character, Integer> charMap = new HashMap<>();
+        int left = 0;
+        int res = 1;
+        for(int i = 0; i < s.length(); ++i){
+            char currentChar = s.charAt(i);
+            if(charMap.containsKey(currentChar) && charMap.get(currentChar) >= left){
+                left = charMap.get(currentChar) + 1;//确保滑动窗内的字符是不重复的
+            }
+            charMap.put(currentChar, i);
+            res = Math.max(res, i - left + 1);
+
+        }
+        return res;
+    }
+}
+```
+9. 找到字符串中所有字母异位词:https://leetcode.cn/problems/find-all-anagrams-in-a-string/description/
+    * 不能用Set去记录单词是否被比较，因为p的单词可能会重复
+    * 利用map求解，将单词映射到数组中，下标代表单词，数值作为比较的依据，重复的单词就+1
+    * 滑动窗即为要比较的字符串p的长度，利用Arrays.equals()去比较两个map数组是否相同，相同即找到异位词。
+    * 利用for循环的i当中滑动窗的左边界，找到异位词就将i添加进结果数组中
+```java
+class Solution {
+    public List<Integer> findAnagrams(String s, String p) {
+        int sLen = s.length(), pLen = p.length();
+
+        if (sLen < pLen) {
+            return new ArrayList<Integer>();
+        }
+
+        List<Integer> ans = new ArrayList<Integer>();
+        int[] sCount = new int[26];
+        int[] pCount = new int[26];
+        for (int i = 0; i < pLen; ++i) {
+            ++sCount[s.charAt(i) - 'a'];
+            ++pCount[p.charAt(i) - 'a'];
+        }
+
+        if (Arrays.equals(sCount, pCount)) {
+            ans.add(0);
+        }
+
+        for (int i = 0; i < sLen - pLen; ++i) {
+            --sCount[s.charAt(i) - 'a'];
+            ++sCount[s.charAt(i + pLen) - 'a'];
+
+            if (Arrays.equals(sCount, pCount)) {
+                ans.add(i + 1);
+            }
+        }
+
+        return ans;
+    }
 }
 
 ```
