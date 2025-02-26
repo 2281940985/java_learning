@@ -369,3 +369,61 @@ class Solution {
 }
 
 ```
+### 4.字串
+10. 和为k的子数组:https://leetcode.cn/problems/subarray-sum-equals-k/description/
+    * 整体思路是利用前缀和去记录所有前缀和的次数，然后判断前缀和与k的差值是否在存储前缀和的哈希表中，若在，即代表两个前缀和元素之间的值即为k
+    * 初始化一个哈希表 prefixSumCount，用来存储前缀和出现的次数，初始时前缀和为0的出现次数为1（表示空子数组的和）
+    * 初始化一个变量 currentSum 来累计当前的前缀和。
+    * 遍历数组 nums，对于每个元素，将其加到 currentSum 上，并查看 currentSum - k 是否在 prefixSumCount 中。如果在，说明从某个前缀和到当前位置的和为 k，因此将其对应的计数加到结果中。
+    * 将 currentSum 在 prefixSumCount 中的计数加1，表示当前的前缀和出现了一次。
+    * 遍历结束后，结果就是和为 k 的子数组的数量。
+    ```java
+    class Solution {
+    public int subarraySum(int[] nums, int k) {
+        int res = 0;
+        Map<Integer, Integer> preSum = new HashMap<Integer, Integer>();
+        preSum.put(0,1);
+        int curSum = 0;
+        for(int num : nums){
+            curSum += num;
+            if(preSum.containsKey(curSum - k)){
+                res += preSum.get(curSum - k); 
+            }
+            preSum.put(curSum, preSum.getOrDefault(curSum,0) + 1);
+        }
+        return res;
+    }
+    }
+    ```
+11. 滑动窗口最大值:https://leetcode.cn/problems/sliding-window-maximum/description/
+    * 先初始化一个双端队列deque来存储数组中最大值的索引，以及一个结果数组result来存放每个窗口的最大值。
+    * 算法分为两个阶段：维护队列头部存储的是滑动窗口的最大值，维护队列的头部始终在滑动窗口内。
+    * 随着for循环的迭代，每次遍历新的元素相当于滑动窗口右移。将新的元素添加进单调队列中。
+
+
+```java
+class Solution {
+    public int[] maxSlidingWindow(int[] nums, int k) {
+        ArrayDeque<Integer> deque = new ArrayDeque<>();
+        int n = nums.length;
+        int[] res =new int[n - k + 1];
+        int index = 0;
+        for(int i = 0; i < n; ++i){
+            //维护队列头部为最大值
+            while(!deque.isEmpty() && nums[i] >= nums[deque.peekLast()]){
+                deque.pollLast();
+            }
+            //维护deque的存储内容始终在滑动窗口内
+            while(!deque.isEmpty() && deque.peek() < i - k + 1){
+                deque.poll();
+            }
+            deque.offer(i);
+            if(i >= k - 1){
+                res[index] = nums[deque.peek()];
+                index++;
+            }
+        }
+        return res;
+    }
+}
+```
