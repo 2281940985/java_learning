@@ -427,3 +427,131 @@ class Solution {
     }
 }
 ```
+12. 最大子数组和:https://leetcode.cn/problems/maximum-subarray/description/
+    * 先检查输入数组是否为空或长度为0,如果是,则返回0,因为没有子数组可言。
+    * 初始化currentSum为数组的第一个元素,同时也初始化maxSum为这个值,因为至少包含一个元素的子数组就是这个元素本身。
+    * 代码遍历数组的其余部分。对于每个元素，有两种选择：要么将其添加到当前子数组（如果当前子数组的和为正数，这样做是有益的），要么丢弃当前子数组并从当前元素开始一个新的子数组（如果当前元素比当前子数组和还要大）
+    * 每次迭代都会用当前子数组的和更新最大子数组和maxSum,时间复杂度为O(n)
+```java
+class Solution {
+    public int maxSubArray(int[] nums) {
+        if(nums.length == 0 || nums == null) return 0;
+        //首先是找到最大值并返回最大值，而不是组成最大值的子数组
+        int currSum = nums[0];
+        int maxSum = nums[0];
+        for(int i = 1; i < nums.length; ++i){
+            //比较累加和与当前和
+            currSum = Math.max(currSum + nums[i], nums[i]);
+            //更新最大值
+            maxSum = Math.max(maxSum, currSum);
+        }
+        return maxSum;
+    }
+}
+```
+13. 轮转数组:https://leetcode.cn/problems/rotate-array/description/
+    * 方法一 首先将整个数组反转，然后分别反转前k个元素和剩下的n-k个元素。
+    * 方法二 是先将数组分为两部分，前n-k个元素和后k个元素，分别反转这两部分，然后再整体反转数组。
+    * 无论哪种方法在反转时候都要注意k > n的情形，这样导致数组轮换了一圈，元素位置并未发生改变。
+```java
+class Solution {
+    public void rotate(int[] nums, int k) {
+       int n = nums.length;
+       k %= n;//防止k大于n
+       reverse(nums, 0, n-k-1);
+       reverse(nums, n-k, n-1);
+       reverse(nums,0, n-1);
+
+    }
+
+    private void reverse(int[] nums, int start, int end){
+        while(start < end){
+            int tmp = nums[start];
+            nums[start] = nums[end];
+            nums[end] = tmp;
+            start++;
+            end--;
+        }
+    }
+}
+```
+
+14. 缺失第一个正数:https://leetcode.cn/problems/first-missing-positive/?envType=study-plan-v2&envId=top-100-liked
+    * 整体思路为将数组看作一个哈希表，如果数组中的元素范围在[1-len]的话，可以交换到与数组元素值对应的下标中去。遍历数组循环这样操作。
+    * 从头遍历数组当出现第一个元素值不是下标+1的话，返回下标+1即可，因为此时该元素值一定大于len的，返回下标+1满足条件。
+    * 如果遍历后未找到满足的元素，则数组为1-len，那么返回的值为len+1。
+```java
+
+class Solution {
+    public int firstMissingPositive(int[] nums) {
+        int len = nums.length;
+        for(int i = 0; i < len; ++i){
+            while(nums[i] >= 1 && nums[i] <= len && nums[nums[i]-1] != nums[i]){
+                swap(nums, i, nums[i] - 1);
+            }
+        }
+        for(int i =0; i < len; ++i){
+            if(nums[i] != i + 1){
+                return i + 1;
+            }
+        }
+        return len+1;//未找到不满足下标与元素的关系，则返回数组长度+1
+    }
+
+    private void swap(int[] nums, int i, int j){
+        int tmp = nums[i];
+        nums[i] = nums[j];
+        nums[j] = tmp;
+    }
+}
+```
+### 6.矩阵
+15. 矩阵置零：https://leetcode.cn/problems/set-matrix-zeroes/description/?envType=study-plan-v2&envId=top-100-liked  
+    * 可以先复制一份矩阵副本，找出0的位置，在对矩阵副本进行操作，空间复杂度为O(mn)
+    * 可以用两个数组来标记矩阵中0的位置，然后在根据数组更改原先的矩阵，空间复杂度略小于为O(mn)
+    * 可以直接将矩阵的第一行与第一列作为标记0的数组，但是第一个元素被重叠了，因此要新建一个zeroRow作为标记为0的列数组。
+    * 最后置0时候，先根据两个数组置第二行第二列的元素，第一行第一列元素根据matrix[0][0]与zeroRow决定。
+```java
+class Solution {
+    public void setZeroes(int[][] matrix) {
+        int rows = matrix.length;
+        int cols = matrix[0].length;
+        int zeroRow = 1;
+        for(int i = 0; i < rows; i++){
+            for(int j = 0; j < cols; j++){
+                if(matrix[i][j] == 0){
+                    matrix[0][j] = 0;
+                    if(i == 0){
+                        zeroRow = 0;
+                    }else{
+                        matrix[i][0] = 0;
+                    }
+                }
+            }
+        }
+        /*根据第一行第一列判断其余元素是否置0*/
+        for(int i = 1; i < rows; i++){
+            for(int j = 1; j < cols; j++){
+                if(matrix[0][j] == 0 || matrix[i][0] == 0){
+                    matrix[i][j] = 0;
+                }
+            }
+        }
+        /*考虑首行为0*/
+        if(matrix[0][0] == 0){
+            for(int i = 0; i < rows; i++){
+                matrix[i][0] = 0;
+            }
+        }
+        /*考虑首列为0*/
+        if(zeroRow == 0){
+            for(int i = 0; i < cols; i++){
+                matrix[0][i] = 0;
+            }
+        }
+
+        }
+    }
+
+```
+
